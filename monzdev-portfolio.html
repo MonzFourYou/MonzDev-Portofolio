@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MonzDev — Frontend / UI Developer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-void:#0e1016;
+    --bg-panel:#161927;
+    --bg-panel-2:#1c2033;
+    --bg-line-hl:#20253a;
+    --border:#272c42;
+    --text-main:#d7dae3;
+    --text-dim:#8890a6;
+    --text-muted:#565d75;
+    --kw:#c792ea;
+    --str:#8ed08a;
+    --fn:#6cb6ff;
+    --amber:#e5a663;
+    --red:#ec6a6a;
+    --radius:6px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg-void);
+    color:var(--text-main);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;}
+
+  /* ---------- Title bar ---------- */
+  .titlebar{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 16px;
+    background:var(--bg-panel);
+    border-bottom:1px solid var(--border);
+    position:sticky;
+    top:0;
+    z-index:50;
+  }
+  .dots{display:flex; gap:6px;}
+  .dot{width:11px;height:11px;border-radius:50%;}
+  .dot.red{background:#ec6a6a;}
+  .dot.yellow{background:#e5c463;}
+  .dot.green{background:#8ed08a;}
+  .titlebar-name{
+    font-size:12px;
+    color:var(--text-dim);
+    margin-left:6px;
+  }
+  .titlebar-name strong{color:var(--text-main);}
+
+  /* ---------- Tab bar (nav) ---------- */
+  .tabbar{
+    display:flex;
+    background:var(--bg-panel);
+    border-bottom:1px solid var(--border);
+    overflow-x:auto;
+    position:sticky;
+    top:37px;
+    z-index:49;
+    scrollbar-width:none;
+  }
+  .tabbar::-webkit-scrollbar{display:none;}
+  .tab{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:11px 18px;
+    font-size:13px;
+    white-space:nowrap;
+    color:var(--text-dim);
+    text-decoration:none;
+    border-right:1px solid var(--border);
+    border-bottom:2px solid transparent;
+    background:var(--bg-panel);
+    transition:color .15s ease, background .15s ease;
+  }
+  .tab:hover{color:var(--text-main); background:var(--bg-panel-2);}
+  .tab.active{
+    color:var(--text-main);
+    background:var(--bg-void);
+    border-bottom:2px solid var(--amber);
+  }
+  .tab .dotfile{width:6px;height:6px;border-radius:50%;flex:none;}
+  .tab.about .dotfile{background:var(--fn);}
+  .tab.skills .dotfile{background:var(--str);}
+  .tab.projects .dotfile{background:var(--kw);}
+  .tab.contact .dotfile{background:var(--amber);}
+
+  /* ---------- Layout: sidebar + editor ---------- */
+  .workspace{
+    display:flex;
+    align-items:flex-start;
+    min-height:calc(100vh - 74px);
+  }
+  .sidebar{
+    width:230px;
+    flex:none;
+    background:var(--bg-panel);
+    border-right:1px solid var(--border);
+    padding:18px 0;
+    position:sticky;
+    top:74px;
+    height:calc(100vh - 74px);
+    overflow-y:auto;
+  }
+  .sidebar-title{
+    font-size:11px;
+    letter-spacing:.08em;
+    color:var(--text-muted);
+    padding:0 16px 10px;
+    text-transform:uppercase;
+  }
+  .tree-folder{
+    font-size:13px;
+    color:var(--text-dim);
+    padding:6px 16px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .tree-file{
+    font-size:13px;
+    padding:6px 16px 6px 30px;
+    color:var(--text-dim);
+    text-decoration:none;
+    display:block;
+    border-left:2px solid transparent;
+    transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  .tree-file:hover{color:var(--text-main); background:var(--bg-line-hl);}
+  .tree-file.active-file{color:var(--amber); border-left-color:var(--amber); background:var(--bg-line-hl);}
+
+  .editor{
+    flex:1;
+    min-width:0;
+  }
+  .code-row{
+    display:flex;
+  }
+  .gutter{
+    flex:none;
+    width:44px;
+    text-align:right;
+    padding-right:14px;
+    color:var(--text-muted);
+    font-size:13px;
+    line-height:1.7;
+    user-select:none;
+    counter-reset:none;
+  }
+  .gutter span{display:block; counter-increment:line;}
+  .gutter span::before{content: counter(line);}
+  .content-col{
+    flex:1;
+    min-width:0;
+    padding:0 24px 0 8px;
+  }
+
+  section{
+    counter-reset:line;
+    padding:70px 0 40px;
+    border-bottom:1px solid var(--border);
+  }
+  section:last-of-type{border-bottom:none;}
+
+  /* ---------- Hero ---------- */
+  #hero .content-col{padding-top:6px;}
+  .hero-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-size:12px;
+    color:var(--str);
+    background:rgba(142,208,138,.08);
+    border:1px solid rgba(142,208,138,.25);
+    padding:4px 10px;
+    border-radius:999px;
+    margin-bottom:22px;
+  }
+  .pulse{width:7px;height:7px;border-radius:50%;background:var(--str); box-shadow:0 0 0 rgba(142,208,138,.6); animation:pulse 2s infinite;}
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(142,208,138,.5);}
+    70%{box-shadow:0 0 0 8px rgba(142,208,138,0);}
+    100%{box-shadow:0 0 0 0 rgba(142,208,138,0);}
+  }
+  .code-line{font-size:15px; line-height:1.7; white-space:pre-wrap;}
+  .code-line.big{font-size:clamp(22px,4vw,34px); font-weight:700; line-height:1.5;}
+  .kw{color:var(--kw);}
+  .str{color:var(--str);}
+  .fn{color:var(--fn);}
+  .amber{color:var(--amber);}
+  .muted{color:var(--text-muted);}
+  .punct{color:var(--text-dim);}
+
+  #role-typed{color:var(--str); border-right:2px solid var(--amber); padding-right:2px;}
+
+  .hero-actions{display:flex; gap:12px; margin-top:34px; flex-wrap:wrap;}
+  .btn{
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    padding:11px 20px;
+    border-radius:var(--radius);
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    border:1px solid var(--border);
+    transition:transform .15s ease, border-color .15s ease, background .15s ease;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn-primary{background:var(--amber); color:#1a1206; border-color:var(--amber); font-weight:600;}
+  .btn-primary:hover{background:#f0b578;}
+  .btn-ghost{color:var(--text-main); }
+  .btn-ghost:hover{border-color:var(--text-dim); background:var(--bg-panel-2);}
+
+  /* ---------- Section headers ---------- */
+  .eyebrow{
+    font-size:12px;
+    color:var(--text-muted);
+    margin-bottom:8px;
+  }
+  h2.sec-title{
+    font-family:'JetBrains Mono',monospace;
+    font-size:clamp(20px,3vw,26px);
+    margin:0 0 26px;
+    color:var(--text-main);
+  }
+  h2.sec-title .kw{margin-right:2px;}
+
+  /* ---------- About ---------- */
+  .about-body{
+    max-width:640px;
+    font-size:16px;
+    line-height:1.85;
+    color:var(--text-dim);
+  }
+  .about-body p{margin:0 0 18px;}
+  .about-body strong{color:var(--text-main); font-weight:600;}
+
+  .stat-row{display:flex; gap:34px; margin-top:34px; flex-wrap:wrap;}
+  .stat b{display:block; font-family:'JetBrains Mono',monospace; font-size:24px; color:var(--amber);}
+  .stat span{font-size:12px; color:var(--text-muted);}
+
+  /* ---------- Skills ---------- */
+  .json-block{font-size:15px; line-height:2;}
+  .json-key{color:var(--fn);}
+  .json-arr{color:var(--text-dim);}
+  .skill-tag{color:var(--str);}
+  .indent{padding-left:26px;}
+
+  /* ---------- Projects ---------- */
+  .project-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:18px;
+    margin-top:6px;
+  }
+  .project-card{
+    background:var(--bg-panel);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:20px;
+    transition:border-color .15s ease, transform .15s ease;
+  }
+  .project-card:hover{border-color:var(--fn); transform:translateY(-2px);}
+  .project-file{
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    color:var(--text-muted);
+    margin-bottom:10px;
+  }
+  .project-file .fn{color:var(--fn);}
+  .project-title{font-size:17px; font-weight:600; color:var(--text-main); margin:0 0 8px;}
+  .project-desc{font-size:14px; color:var(--text-dim); line-height:1.65; margin:0 0 14px;}
+  .tag-row{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px;}
+  .tag{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    padding:3px 8px;
+    border-radius:4px;
+    background:var(--bg-line-hl);
+    color:var(--str);
+  }
+  .project-links{display:flex; gap:14px;}
+  .project-links a{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12.5px;
+    color:var(--fn);
+    text-decoration:none;
+  }
+  .project-links a:hover{text-decoration:underline;}
+
+  /* ---------- Contact ---------- */
+  .contact-fn{font-size:15px; line-height:1.9;}
+  .contact-list{margin-top:18px; display:flex; flex-direction:column; gap:10px;}
+  .contact-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:14.5px;
+    color:var(--text-dim);
+    text-decoration:none;
+    width:fit-content;
+  }
+  .contact-item:hover{color:var(--amber);}
+  .contact-item svg{flex:none; opacity:.8;}
+
+  /* ---------- Status bar ---------- */
+  .statusbar{
+    position:sticky;
+    bottom:0;
+    z-index:40;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:var(--amber);
+    color:#1a1206;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11.5px;
+    padding:6px 16px;
+  }
+  .statusbar-left, .statusbar-right{display:flex; gap:16px; align-items:center;}
+
+  footer{
+    padding:22px 16px 90px;
+    text-align:center;
+    font-size:12px;
+    color:var(--text-muted);
+    font-family:'JetBrains Mono',monospace;
+  }
+
+  @media (max-width:900px){
+    .sidebar{display:none;}
+    .gutter{width:30px; font-size:11px;}
+    .code-line.big{font-size:20px;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important; transition:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="titlebar">
+  <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+  <span class="titlebar-name mono"><strong>MonzDev</strong> — portfolio.app</span>
+</div>
+
+<nav class="tabbar" id="tabbar">
+  <a href="#hero" class="tab about mono active" data-target="hero"><span class="dotfile"></span>index.tsx</a>
+  <a href="#about" class="tab about mono" data-target="about"><span class="dotfile"></span>about.tsx</a>
+  <a href="#skills" class="tab skills mono" data-target="skills"><span class="dotfile"></span>skills.json</a>
+  <a href="#projects" class="tab projects mono" data-target="projects"><span class="dotfile"></span>projects/</a>
+  <a href="#contact" class="tab contact mono" data-target="contact"><span class="dotfile"></span>contact.js</a>
+</nav>
+
+<div class="workspace">
+  <aside class="sidebar">
+    <div class="sidebar-title mono">explorer</div>
+    <div class="tree-folder mono">📁 monzdev-portfolio</div>
+    <a href="#hero" class="tree-file mono">📄 index.tsx</a>
+    <a href="#about" class="tree-file mono">📄 about.tsx</a>
+    <a href="#skills" class="tree-file mono">📄 skills.json</a>
+    <div class="tree-folder mono">&nbsp;&nbsp;📁 projects</div>
+    <a href="#projects" class="tree-file mono">📄 landing-page.html</a>
+    <a href="#projects" class="tree-file mono">📄 wa-auto-bot.js</a>
+    <a href="#projects" class="tree-file mono">📄 tele-notify-bot.js</a>
+    <a href="#contact" class="tree-file mono">📄 contact.js</a>
+  </aside>
+
+  <div class="editor">
+
+    <!-- HERO -->
+    <section id="hero">
+      <div class="content-col" style="padding-left:8px;">
+        <span class="hero-badge mono"><span class="pulse"></span>open_to_work</span>
+        <div class="code-line mono"><span class="kw">const</span> developer <span class="punct">=</span> <span class="punct">{</span></div>
+        <div class="code-line big mono">&nbsp;&nbsp;name: <span class="str">"MonzDev"</span>,</div>
+        <div class="code-line big mono">&nbsp;&nbsp;role: <span class="str">"</span><span id="role-typed" class="mono"></span><span class="str">"</span>,</div>
+        <div class="code-line mono">&nbsp;&nbsp;stack: <span class="punct">[</span><span class="str">"HTML"</span>, <span class="str">"JavaScript"</span>, <span class="str">"Node.js"</span><span class="punct">]</span>,</div>
+        <div class="code-line mono">&nbsp;&nbsp;focus: <span class="str">"website simpel & script bot otomatis (WhatsApp / Telegram)"</span>,</div>
+        <div class="code-line mono punct">};</div>
+
+        <div class="hero-actions">
+          <a href="#projects" class="btn btn-primary">Lihat Proyek →</a>
+          <a href="#contact" class="btn btn-ghost mono">$ hubungi --now</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about">
+      <div class="code-row">
+        <div class="gutter mono"><span></span><span></span><span></span><span></span><span></span></div>
+        <div class="content-col">
+          <div class="eyebrow mono">// about.tsx</div>
+          <h2 class="sec-title"><span class="kw">function</span> <span class="fn">AboutMe</span><span class="punct">()</span></h2>
+          <div class="about-body">
+            <p>Saya <strong>MonzDev</strong>, seorang Frontend / UI Developer yang senang mengubah desain menjadi antarmuka yang hidup — rapi di mata, cepat saat dipakai, dan enak disentuh di semua ukuran layar.</p>
+            <p>Saya masih di tahap awal perjalanan sebagai developer, fokus belajar membuat <strong>website</strong> sederhana serta <strong>script bot</strong> otomatis untuk WhatsApp dan Telegram.</p>
+            <p>Saya suka mengulik cara kerja bot-bot yang sering dipakai orang, lalu mencoba membuat versi sendiri — mulai dari auto-reply, notifikasi, sampai perintah-perintah kecil yang mempermudah pekerjaan sehari-hari.</p>
+          </div>
+          <div class="stat-row">
+            <div class="stat"><b>&lt;1</b><span>tahun pengalaman</span></div>
+            <div class="stat"><b>3+</b><span>proyek latihan</span></div>
+            <div class="stat"><b>∞</b><span>semangat belajar</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SKILLS -->
+    <section id="skills">
+      <div class="code-row">
+        <div class="gutter mono"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        <div class="content-col">
+          <div class="eyebrow mono">// skills.json</div>
+          <h2 class="sec-title"><span class="punct">{</span> skillset <span class="punct">}</span></h2>
+          <div class="json-block mono">
+            <div class="punct">{</div>
+            <div class="indent"><span class="json-key">"web"</span>: <span class="json-arr">[</span><span class="skill-tag">"HTML5"</span>, <span class="skill-tag">"CSS3"</span>, <span class="skill-tag">"JavaScript"</span><span class="json-arr">]</span>,</div>
+            <div class="indent"><span class="json-key">"bot_scripting"</span>: <span class="json-arr">[</span><span class="skill-tag">"Node.js"</span>, <span class="skill-tag">"WhatsApp Bot"</span>, <span class="skill-tag">"Telegram Bot"</span><span class="json-arr">]</span>,</div>
+            <div class="indent"><span class="json-key">"tools"</span>: <span class="json-arr">[</span><span class="skill-tag">"Git"</span>, <span class="skill-tag">"VS Code"</span><span class="json-arr">]</span>,</div>
+            <div class="indent"><span class="json-key">"currently_learning"</span>: <span class="json-arr">[</span><span class="skill-tag">"React"</span>, <span class="skill-tag">"Python"</span><span class="json-arr">]</span></div>
+            <div class="punct">}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROJECTS -->
+    <section id="projects">
+      <div class="content-col" style="padding-left:8px;">
+        <div class="eyebrow mono">// projects/</div>
+        <h2 class="sec-title"><span class="kw">import</span> <span class="fn">{ Projects }</span></h2>
+
+        <div class="project-grid">
+          <div class="project-card">
+            <div class="project-file">📄 <span class="fn">landing-page.html</span></div>
+            <h3 class="project-title">Landing Page — Website Portofolio Simpel</h3>
+            <p class="project-desc">Website satu halaman yang ringan dan responsif, cocok untuk profil pribadi atau usaha kecil.</p>
+            <div class="tag-row"><span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">JavaScript</span></div>
+            <div class="project-links"><a href="#">Live Demo →</a><a href="#">GitHub →</a></div>
+          </div>
+
+          <div class="project-card">
+            <div class="project-file">📄 <span class="fn">wa-auto-bot.js</span></div>
+            <h3 class="project-title">WA Auto Bot — Bot WhatsApp</h3>
+            <p class="project-desc">Script bot WhatsApp untuk auto-reply, pengingat, dan perintah sederhana lewat chat.</p>
+            <div class="tag-row"><span class="tag">Node.js</span><span class="tag">WhatsApp Bot</span></div>
+            <div class="project-links"><a href="#">Live Demo →</a><a href="#">GitHub →</a></div>
+          </div>
+
+          <div class="project-card">
+            <div class="project-file">📄 <span class="fn">tele-notify-bot.js</span></div>
+            <h3 class="project-title">Tele Notify — Bot Telegram</h3>
+            <p class="project-desc">Bot Telegram untuk kirim notifikasi otomatis dan menjalankan perintah dasar lewat chat.</p>
+            <div class="tag-row"><span class="tag">Node.js</span><span class="tag">Telegram Bot</span></div>
+            <div class="project-links"><a href="#">Live Demo →</a><a href="#">GitHub →</a></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact">
+      <div class="content-col" style="padding-left:8px;">
+        <div class="eyebrow mono">// contact.js</div>
+        <h2 class="sec-title"><span class="kw">export function</span> <span class="fn">sayHello</span><span class="punct">()</span></h2>
+        <div class="contact-fn mono muted">Ada proyek atau ide yang ingin dikerjakan bareng? Kabari saya — biasanya balas dalam 1x24 jam.</div>
+
+        <div class="contact-list">
+          <a href="mailto:Monz@monzdev.web.id" class="contact-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 6l8 7 8-7"/></svg>
+            Monz@monzdev.web.id
+          </a>
+          <a href="https://github.com/MonzFourYou" class="contact-item" target="_blank" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-1.04-.01-1.89-2.78.61-3.37-1.19-3.37-1.19-.45-1.17-1.11-1.48-1.11-1.48-.9-.63.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.89 1.55 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.05 0-1.12.39-2.03 1.03-2.74-.1-.26-.45-1.32.1-2.75 0 0 .84-.27 2.75 1.05a9.4 9.4 0 0 1 5 0c1.91-1.32 2.75-1.05 2.75-1.05.55 1.43.2 2.49.1 2.75.64.71 1.03 1.62 1.03 2.74 0 3.92-2.34 4.78-4.57 5.04.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/></svg>
+            github.com/MonzFourYou
+          </a>
+          <a href="https://linktr.ee/Mona67" class="contact-item" target="_blank" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            linktr.ee/Mona67
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <footer class="mono">© 2026 MonzDev. Dibangun dengan React di kepala, HTML di tangan.</footer>
+  </div>
+</div>
+
+<div class="statusbar">
+  <div class="statusbar-left">
+    <span>⎇ main</span>
+    <span id="status-file">index.tsx</span>
+  </div>
+  <div class="statusbar-right">
+    <span>UTF-8</span>
+    <span>TSX</span>
+    <span id="status-ln">Ln 1, Col 1</span>
+  </div>
+</div>
+
+<script>
+  // Typewriter effect for role
+  const roles = ["Web Developer", "Bot Script Creator", "WhatsApp Bot Dev", "Telegram Bot Dev"];
+  const roleEl = document.getElementById('role-typed');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (reduceMotion) {
+    roleEl.textContent = roles[0];
+  } else {
+    let ri = 0, ci = 0, deleting = false;
+    function tick(){
+      const word = roles[ri];
+      if(!deleting){
+        ci++;
+        roleEl.textContent = word.slice(0, ci);
+        if(ci === word.length){ deleting = true; setTimeout(tick, 1400); return; }
+      } else {
+        ci--;
+        roleEl.textContent = word.slice(0, ci);
+        if(ci === 0){ deleting = false; ri = (ri+1) % roles.length; }
+      }
+      setTimeout(tick, deleting ? 40 : 70);
+    }
+    tick();
+  }
+
+  // Active tab + status bar sync via IntersectionObserver
+  const sections = document.querySelectorAll('section');
+  const tabs = document.querySelectorAll('.tab');
+  const treeFiles = document.querySelectorAll('.tree-file');
+  const statusFile = document.getElementById('status-file');
+  const fileNames = { hero:'index.tsx', about:'about.tsx', skills:'skills.json', projects:'projects/', contact:'contact.js' };
+
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        const id = entry.target.id;
+        tabs.forEach(t=>t.classList.toggle('active', t.dataset.target === id));
+        treeFiles.forEach(f=>f.classList.toggle('active-file', f.getAttribute('href') === '#'+id));
+        statusFile.textContent = fileNames[id] || 'index.tsx';
+      }
+    });
+  }, { rootMargin: '-45% 0px -50% 0px' });
+  sections.forEach(s=>io.observe(s));
+
+  // Fake Ln/Col in status bar based on scroll position
+  const statusLn = document.getElementById('status-ln');
+  window.addEventListener('scroll', ()=>{
+    const ln = Math.max(1, Math.floor(window.scrollY / 22) + 1);
+    const col = (window.scrollY % 80) + 1;
+    statusLn.textContent = `Ln ${ln}, Col ${col}`;
+  }, { passive:true });
+</script>
+
+</body>
+</html>
